@@ -44,7 +44,8 @@ No other text, no markdown, just the JSON array.`,
     const raw = message.content[0];
     if (raw.type !== "text") throw new Error("Unexpected response type");
 
-    const tasks = JSON.parse(raw.text.trim());
+    const cleaned = raw.text.trim().replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "");
+    const tasks = JSON.parse(cleaned);
     return NextResponse.json({ tasks });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
