@@ -70,6 +70,7 @@ export default function Home() {
   type RecordState = "idle" | "recording" | "processing";
   const [recordState, setRecordState] = useState<RecordState>("idle");
   const [transcript, setTranscript] = useState("");
+  const [voiceError, setVoiceError] = useState("");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
 
@@ -89,6 +90,7 @@ export default function Home() {
     rec.onresult = async (e: any) => {
       const text = e.results[0][0].transcript;
       setTranscript(text);
+      setVoiceError("");
       setRecordState("processing");
 
       try {
@@ -98,16 +100,21 @@ export default function Home() {
           body: JSON.stringify({ transcript: text }),
         });
         const data = await res.json();
-        if (data.tasks?.length) {
+        if (data.error) {
+          setVoiceError(data.error);
+        } else if (data.tasks?.length) {
           setEvents((prev) => [...prev, ...data.tasks.map((t: Omit<CalEvent, "accent">) => ({ ...t, accent: false }))]);
+        } else {
+          setVoiceError("No tasks found — try being more specific.");
         }
-      } catch {
-        // silently fail
+      } catch (err) {
+        setVoiceError("Could not connect to server.");
+        console.error(err);
       }
       setRecordState("idle");
     };
 
-    rec.onerror = () => setRecordState("idle");
+    rec.onerror = (e: any) => { setVoiceError(`Mic error: ${e.error}`); setRecordState("idle"); };
     rec.onend = () => { if (recordState === "recording") setRecordState("idle"); };
 
     rec.start();
@@ -387,17 +394,13 @@ export default function Home() {
 
           {/* Transcript */}
           {transcript && (
-            <p style={{
-              fontFamily: "var(--font-mono)",
-              fontWeight: 200,
-              fontSize: 11,
-              color: "#888888",
-              maxWidth: 280,
-              textAlign: "center",
-              lineHeight: 1.7,
-              margin: 0,
-            }}>
+            <p style={{ fontFamily: "var(--font-mono)", fontWeight: 200, fontSize: 11, color: "#888888", maxWidth: 280, textAlign: "center", lineHeight: 1.7, margin: 0 }}>
               &ldquo;{transcript}&rdquo;
+            </p>
+          )}
+          {voiceError && (
+            <p style={{ fontFamily: "var(--font-mono)", fontWeight: 200, fontSize: 11, color: "#E8533A", maxWidth: 280, textAlign: "center", lineHeight: 1.7, margin: 0 }}>
+              {voiceError}
             </p>
           )}
         </div>
