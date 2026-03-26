@@ -47,7 +47,8 @@ No other text, no markdown, just the JSON array.`,
     const tasks = JSON.parse(raw.text.trim());
     return NextResponse.json({ tasks });
   } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
     console.error(err);
-    return NextResponse.json({ error: "Failed to parse tasks" }, { status: 500 });
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
