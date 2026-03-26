@@ -70,10 +70,12 @@ export default function Home() {
   type RecordState = "idle" | "recording" | "processing";
   const [recordState, setRecordState] = useState<RecordState>("idle");
   const [transcript, setTranscript] = useState("");
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null);
 
   function startListening() {
-    const SR = (window as typeof window & { webkitSpeechRecognition: typeof SpeechRecognition }).webkitSpeechRecognition || window.SpeechRecognition;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const SR = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
     if (!SR) { alert("Speech recognition not supported. Use Chrome or Edge."); return; }
 
     const rec = new SR();
@@ -84,7 +86,7 @@ export default function Home() {
 
     rec.onstart = () => setRecordState("recording");
 
-    rec.onresult = async (e: SpeechRecognitionEvent) => {
+    rec.onresult = async (e: any) => {
       const text = e.results[0][0].transcript;
       setTranscript(text);
       setRecordState("processing");
