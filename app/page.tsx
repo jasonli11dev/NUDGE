@@ -97,7 +97,11 @@ export default function Home() {
         const res = await fetch("/api/parse-tasks", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ transcript: text }),
+          body: JSON.stringify({
+            transcript: text,
+            today: now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }),
+            weekDays: weekDays.map(d => d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })),
+          }),
         });
         const data = await res.json();
         if (data.error) {

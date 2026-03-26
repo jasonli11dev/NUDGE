@@ -7,7 +7,7 @@ const client = new Anthropic();
 
 export async function POST(req: NextRequest) {
   try {
-    const { transcript } = await req.json();
+    const { transcript, today, weekDays } = await req.json();
 
     if (!transcript?.trim()) {
       return NextResponse.json({ tasks: [] });
@@ -23,8 +23,14 @@ export async function POST(req: NextRequest) {
 
 Transcript: "${transcript}"
 
+Context:
+- Today is ${today} (col index ${weekDays.indexOf(today)})
+- This week's days (col 0=Mon to col 6=Sun): ${weekDays.join(", ")}
+- "tomorrow" means the day after today
+- "today" means ${today}
+
 Rules:
-- col: day of week (0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun)
+- col: day of week index matching the weekDays array above (0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun)
 - sh/sm: start hour/minute in 24h format
 - eh/em: end hour/minute in 24h format
 - label: short task name, max 3 words
